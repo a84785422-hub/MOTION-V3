@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "source": "my_clip.mp4",
+  "trim": { "start": 0.0, "end": 6.0 },
+  "still_duration": 5.0,
+  "output": {
+    "path": "my_clip_motion.mp4",
+    "width": 1920,
+    "height": 1080,
+    "fps": null,
+    "preset": "h264_high",
+    "fit": "cover",
+    "quality": "high"
+  },
+  "motion_blur": { "enabled": true, "shutter_angle": 180 },
+  "color": { "linear_light": true, "dither": true },
+  "audio": true,
+  "camera": {
+    "keyframes": [
+      { "t": 0.0, "x": 0.50, "y": 0.50, "zoom": 1.00, "rotation": 0.0, "interp": "ease_in_out" },
+      { "t": 3.0, "x": 0.56, "y": 0.46, "zoom": 1.35, "rotation": 1.5, "interp": "smooth" },
+      { "t": 6.0, "x": 0.50, "y": 0.50, "zoom": 1.10, "rotation": 0.0, "interp": "ease_in_out" }
+    ]
+  }
+}
