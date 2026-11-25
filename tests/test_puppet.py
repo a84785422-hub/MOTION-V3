@@ -75,3 +75,10 @@ def test_body_mode_end_to_end(tmp_path, test_video, monkeypatch):
     res = anim.animate(anim.AnimateOptions(str(ref), test_video, str(out), max_output_side=300, mode="body"),
                        engine=pp.PuppetEngine(tmp_path / "x.task"))
     assert res.frames >= 30 and out.stat().st_size > 0
+
+
+def test_cli_animate_download_flag_needs_no_positionals():
+    from vmc.cli import _build_parser
+
+    a = _build_parser().parse_args(["animate", "--download-models"])
+    assert a.download_models and a.reference is None and a.driving is None

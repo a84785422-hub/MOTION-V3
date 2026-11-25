@@ -68,8 +68,8 @@ def _build_parser() -> argparse.ArgumentParser:
     pr.add_argument("media")
 
     a = sub.add_parser("animate", help="IA : animer une image de référence avec les mouvements d'une vidéo")
-    a.add_argument("reference", help="image de référence (visage)")
-    a.add_argument("driving", help="vidéo dont les mouvements sont copiés")
+    a.add_argument("reference", nargs="?", help="image de référence (visage)")
+    a.add_argument("driving", nargs="?", help="vidéo dont les mouvements sont copiés")
     a.add_argument("-o", "--output", help="vidéo de sortie (.mp4)")
     a.add_argument("--max-side", type=int, default=1024, help="plus grand côté de la sortie (1024 par défaut)")
     a.add_argument("--max-fps", type=float, default=25.0, help="cadence maximale traitée (25 par défaut)")
@@ -233,6 +233,9 @@ def cmd_animate(args: argparse.Namespace) -> int:
         print(f"\nModèles prêts : {d}")
         return 0
 
+    if not args.reference or not args.driving:
+        print("Erreur : indiquez l'image de référence et la vidéo (ou utilisez --download-models).", file=sys.stderr)
+        return 2
     out = args.output or str(Path(args.driving).with_name(Path(args.reference).stem + "_anime.mp4"))
     try:
         if args.body:
