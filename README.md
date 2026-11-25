@@ -17,7 +17,13 @@ vmc animate visage.png video.mp4 --duration 3 --max-side 512 --max-fps 12   # te
   (`retinaface_det_static`, `face_2dpose_106_static`, `landmark`, `appearance_feature_extractor`,
   `motion_extractor`, `warping_spade`, `stitching`, `stitching_lip`) dans ce dossier.
   Variable `VMC_MODELS` pour changer d'emplacement.
-* **Limites** : c'est du transfert de **visage / tête** (pas du corps entier). Le visage de la
+* **Corps entier (mode « marionnette »)** : `vmc animate perso.png video.mp4 --body` ou, dans la fenêtre,
+  le mode « Corps entier ». Le squelette de la vidéo (MediaPipe Pose, modèle téléchargé au premier
+  lancement) déforme l'image. **C'est approximatif** : le fond et les vêtements s'étirent, les zones
+  cachées ne sont pas inventées, la caméra du pilote doit être fixe et la personne entière visible.
+  Pour un vrai corps entier de qualité il faut une carte NVIDIA (modèles de type Wan-Animate), non
+  supporté par ce PC.
+* **Limites du mode visage** : c'est du transfert de **visage / tête**. Le visage de la
   référence doit être net et de face ou presque ; un seul visage est animé (le plus grand).
   La première image de la vidéo pilote sert de point de départ : commencez par un visage neutre.
 * **Vitesse** : sur un petit processeur sans GPU, comptez plusieurs secondes par image. Testez avec

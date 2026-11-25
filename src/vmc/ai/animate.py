@@ -35,6 +35,7 @@ class AnimateOptions:
     audio: bool = True
     crf: int = 16
     threads: Optional[int] = None
+    mode: str = "face"             # "face" (LivePortrait, visage/tête) ou "body" (marionnette corps entier)
 
 
 @dataclass
@@ -99,8 +100,13 @@ def animate(
 
     if engine is None:
         try:
-            directory = model_store.ensure_models(cancel=cancel)
-            engine = LivePortrait(directory, opts.threads)
+            if opts.mode == "body":
+                from .puppet import NoPoseError, PuppetEngine
+
+                engine = PuppetEngine(model_store.ensure_pose_model(cancel=cancel))
+            else:
+                directory = model_store.ensure_models(cancel=cancel)
+                engine = LivePortrait(directory, opts.threads)
         except model_store.Cancelled:
             raise ExportCancelled()
         except model_store.ModelError as exc:
@@ -108,11 +114,15 @@ def animate(
 
     try:
         source = engine.prepare_source(reference)
-    except NoFaceError as exc:
+    except Exception as exc:  # NoFaceError / NoPoseError
+        if type(exc).__name__ not in ("NoFaceError", "NoPoseError"):
+            raise
         raise ExportError(str(exc)) from exc
 
     src_fps = dri_info.fps or Fraction(25)
     fps = src_fps if float(src_fps) <= opts.max_fps else normalize_fps(opts.max_fps)
+    if hasattr(engine, "fps"):
+        engine.fps = float(fps)
     duration = dri_info.duration or 0.0
     span = max(0.0, duration - opts.start)
     if opts.duration is not None:
@@ -151,7 +161,7 @@ def animate(
                 rate = done / el
                 progress(done, max(total, done), rate, max(0, total - done) / rate)
         if first is None:
-            raise ExportError("Aucun visage détecté dans la vidéo pilote.")
+            raise ExportError("Aucune personne détectée dans la vidéo pilote." if opts.mode == "body" else "Aucun visage détecté dans la vidéo pilote.")
         encoder.close()
     except BaseException:
         encoder.abort()

@@ -11,6 +11,7 @@ The Windows build of Video Motion Control bundles the following components.
 | [ONNX Runtime](https://onnxruntime.ai) | exécution des modèles IA sur CPU | MIT |
 | [LivePortrait](https://github.com/KwaiVGI/LivePortrait) / [FasterLivePortrait](https://github.com/warmshao/FasterLivePortrait) | algorithme et conversion ONNX portés dans `src/vmc/ai` ; `mask_template.png` | MIT |
 | Poids ONNX (téléchargés au premier lancement, non embarqués) | LivePortrait : MIT ; détection de visage InsightFace (`retinaface_det_static`, `face_2dpose_106_static`) : **non commercial** | voir README |
+| [MediaPipe](https://github.com/google-ai-edge/mediapipe) | détection de pose (mode corps entier) ; modèle `pose_landmarker_full.task` téléchargé au premier lancement | Apache 2.0 |
 | [PyInstaller](https://pyinstaller.org) | packaging | GPL v2 with a bootloader exception that allows distributing the resulting programs under any license |
 
 ## Distributing the executable

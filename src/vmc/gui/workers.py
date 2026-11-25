@@ -126,16 +126,21 @@ class AnimateWorker(QtCore.QObject):
         from ..ai.liveportrait import LivePortrait
 
         try:
-            if not store.is_ready():
-                self.status.emit("Téléchargement des modèles IA (une seule fois)…")
+            def on_dl(name, idx, n, done, total):
+                self.progress.emit(done, max(total, done, 1), 0.0, 0.0)
+                self.status.emit(f"Téléchargement {idx}/{n} : {name}")
 
-                def on_dl(name, idx, n, done, total):
-                    self.progress.emit(done, max(total, done, 1), 0.0, 0.0)
-                    self.status.emit(f"Téléchargement {idx}/{n} : {name}")
+            if self.options.mode == "body":
+                from ..ai.puppet import PuppetEngine
 
-                store.ensure_models(progress=on_dl, cancel=self.cancel_event)
-            self.status.emit("Chargement des modèles…")
-            engine = LivePortrait(store.models_dir(), self.options.threads)
+                self.status.emit("Préparation du modèle de pose…")
+                engine = PuppetEngine(store.ensure_pose_model(progress=on_dl, cancel=self.cancel_event))
+            else:
+                if not store.is_ready():
+                    self.status.emit("Téléchargement des modèles IA (une seule fois)…")
+                    store.ensure_models(progress=on_dl, cancel=self.cancel_event)
+                self.status.emit("Chargement des modèles…")
+                engine = LivePortrait(store.models_dir(), self.options.threads)
             self.status.emit("Animation en cours…")
             result = animate(
                 self.options,

@@ -148,3 +148,33 @@ def import_from_folder(source: Path, directory: Optional[Path] = None) -> list[s
                 copied.append(name)
                 break
     return copied
+
+
+POSE_NAME = "pose_landmarker_full.task"
+POSE_URLS = (
+    "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/"
+    + POSE_NAME,
+)
+
+
+def pose_model_path() -> Path:
+    return models_dir().parent / "pose" / POSE_NAME
+
+
+def ensure_pose_model(progress: Optional[ProgressFn] = None, cancel: Optional[threading.Event] = None) -> Path:
+    """Modèle de pose (mode corps entier), téléchargé une seule fois."""
+    dest = pose_model_path()
+    if dest.is_file() and dest.stat().st_size > 1_000_000:
+        return dest
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    last: Optional[BaseException] = None
+    for url in POSE_URLS:
+        for _ in range(3):
+            try:
+                _download(url, dest, lambda d, t: progress and progress(POSE_NAME, 1, 1, d, t), cancel)
+                return dest
+            except Cancelled:
+                raise
+            except (urllib.error.URLError, OSError, ModelError) as exc:
+                last = exc
+    raise ModelError(f"Impossible de télécharger le modèle de pose ({last}).\nCopiez {POSE_NAME} dans :\n{dest.parent}")

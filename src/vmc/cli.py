@@ -77,6 +77,7 @@ def _build_parser() -> argparse.ArgumentParser:
     a.add_argument("--duration", type=float, help="durée traitée en secondes")
     a.add_argument("--intensity", type=float, default=1.0, help="intensité du mouvement (1 = fidèle)")
     a.add_argument("--no-audio", action="store_true", help="ne pas copier l'audio de la vidéo pilote")
+    a.add_argument("--body", action="store_true", help="corps entier (marionnette, approximatif) au lieu du visage")
     a.add_argument("--download-models", action="store_true", help="télécharger les modèles IA puis quitter")
     a.add_argument("--models-from", help="dossier contenant déjà les .onnx (installation hors ligne)")
     a.add_argument("-q", "--quiet", action="store_true", help="pas de barre de progression")
@@ -224,6 +225,8 @@ def cmd_animate(args: argparse.Namespace) -> int:
     if args.download_models:
         try:
             d = store.ensure_models(progress=on_download)
+            if args.body:
+                store.ensure_pose_model(progress=on_download)
         except store.ModelError as exc:
             print(f"Erreur : {exc}", file=sys.stderr)
             return 1
@@ -232,7 +235,10 @@ def cmd_animate(args: argparse.Namespace) -> int:
 
     out = args.output or str(Path(args.driving).with_name(Path(args.reference).stem + "_anime.mp4"))
     try:
-        store.ensure_models(progress=on_download)
+        if args.body:
+            store.ensure_pose_model(progress=on_download)
+        else:
+            store.ensure_models(progress=on_download)
     except store.ModelError as exc:
         print(f"Erreur : {exc}", file=sys.stderr)
         return 1
@@ -247,7 +253,7 @@ def cmd_animate(args: argparse.Namespace) -> int:
     opts = AnimateOptions(
         reference=args.reference, driving=args.driving, output=out, max_output_side=args.max_side,
         max_fps=args.max_fps, start=args.start, duration=args.duration, multiplier=args.intensity,
-        audio=not args.no_audio,
+        audio=not args.no_audio, mode="body" if args.body else "face",
     )
     try:
         result = animate(opts, progress=on_progress, cancel=cancel)

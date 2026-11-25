@@ -30,7 +30,11 @@ class AnimateDialog(QtWidgets.QDialog):
         self.ref_edit = QtWidgets.QLineEdit()
         self.drv_edit = QtWidgets.QLineEdit()
         self.out_edit = QtWidgets.QLineEdit()
+        self.mode_combo = QtWidgets.QComboBox()
+        self.mode_combo.addItem("Visage et tête (IA LivePortrait, meilleure qualité)", "face")
+        self.mode_combo.addItem("Corps entier (marionnette, approximatif)", "body")
         form = QtWidgets.QFormLayout()
+        form.addRow("Mode", self.mode_combo)
         form.addRow("Image de référence", self._row(self.ref_edit, self._pick_ref))
         form.addRow("Vidéo pilote", self._row(self.drv_edit, self._pick_drv))
         form.addRow("Fichier de sortie", self._row(self.out_edit, self._pick_out))
@@ -61,7 +65,9 @@ class AnimateDialog(QtWidgets.QDialog):
         form.addRow("", self.audio_check)
 
         note = QtWidgets.QLabel(
-            "Le mouvement de la tête et du visage de la vidéo est copié sur le visage de l'image. "
+            "Visage : le mouvement de la tête et des expressions est copié sur le visage de l'image. "
+            "Corps entier : le squelette de la vidéo déforme l'image (rapide mais grossier : fond et "
+            "vêtements s'étirent, rien n'est inventé pour les zones cachées). "
             "Tout se calcule sur votre PC (aucun envoi sur Internet) ; seul le premier lancement "
             "télécharge les modèles IA. Sur un processeur seul, comptez plusieurs secondes par image : "
             "testez d'abord avec 2 à 3 secondes de vidéo."
@@ -130,6 +136,7 @@ class AnimateDialog(QtWidgets.QDialog):
             reference=ref, driving=drv, output=out, max_output_side=self.side_spin.value(),
             max_fps=self.fps_spin.value(), duration=self.dur_spin.value() or None,
             multiplier=self.int_spin.value(), audio=self.audio_check.isChecked(),
+            mode=self.mode_combo.currentData(),
         )
         self._thread = QtCore.QThread(self)
         self._worker = AnimateWorker(opts)

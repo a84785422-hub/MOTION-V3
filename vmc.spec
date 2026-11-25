@@ -42,9 +42,13 @@ if missing and os.environ.get("VMC_ALLOW_NO_FFMPEG") != "1":
         "Run scripts/fetch_ffmpeg.ps1 first, or set VMC_ALLOW_NO_FFMPEG=1 to build without it."
     )
 
+from PyInstaller.utils.hooks import collect_all  # noqa: E402
+
+mp_datas, mp_binaries, mp_hidden = collect_all("mediapipe")
+
 # --- exclusions (keeps the bundle small) ---------------------------------------------------
 COMMON_EXCLUDES = [
-    "tkinter", "matplotlib", "scipy", "pandas", "IPython", "pytest", "imageio_ffmpeg",
+    "tkinter", "scipy", "pandas", "IPython", "pytest", "imageio_ffmpeg",
 ]
 QT_EXCLUDES = [
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtWebEngineQuick",
@@ -63,8 +67,9 @@ QT_EXCLUDES = [
 gui_a = Analysis(  # noqa: F821
     [str(ROOT / "packaging" / "gui_entry.py")],
     pathex=[str(ROOT / "src")],
-    datas=datas,
-    hiddenimports=["onnxruntime"],
+    datas=datas + mp_datas,
+    binaries=mp_binaries,
+    hiddenimports=["onnxruntime"] + mp_hidden,
     excludes=COMMON_EXCLUDES + QT_EXCLUDES,
     noarchive=False,
 )
@@ -72,8 +77,9 @@ gui_a = Analysis(  # noqa: F821
 cli_a = Analysis(  # noqa: F821
     [str(ROOT / "packaging" / "cli_entry.py")],
     pathex=[str(ROOT / "src")],
-    datas=[(str(MASK), "vmc/ai")],
-    hiddenimports=["onnxruntime"],
+    datas=[(str(MASK), "vmc/ai")] + mp_datas,
+    binaries=mp_binaries,
+    hiddenimports=["onnxruntime"] + mp_hidden,
     excludes=COMMON_EXCLUDES + ["PySide6", "shiboken6", "vmc.gui"],
     noarchive=False,
 )
